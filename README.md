@@ -1,10 +1,10 @@
 geventweet
 ==========
 
-Real-time Twitter streaming python web app using gevent and gevent-socketio.
+Real-time Twitter streaming python web app using ``gevent`` and ``gevent-socketio``.
 
 The idea was to get a working and nice example of how to write a simple asynchronous web application using socketIO with python.
-I took inspiration from the examples provided by the ``gevent-socketio`` team and the work of ajdavis/chirp, thank you guys.
+I took inspiration from the examples provided by the ``gevent-socketio`` team and the work of ``ajdavis/chirp``, thank you guys.
 
 
 technical overview
@@ -37,6 +37,7 @@ try it out
 ==========
 
 Just clone this repository and run geventweet.py with the following REQUIRED arguments :
+
 $ python geventweet.py -u YOUR_TWITTER_LOGIN -p YOUR_TWITTER_PASSWD -k KEYWORD1,KEYWORD2
 
 
@@ -44,4 +45,5 @@ gentoo users
 ============
 
 The required packages exist on the ultrabug overlay.
+
 See http://git.overlays.gentoo.org/gitweb/ or use layman for easy installation ;)
