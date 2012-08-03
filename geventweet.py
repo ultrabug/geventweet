@@ -38,26 +38,34 @@ class GeventTweetStream():
 			handler.emit(name, json.dumps(value))
 
 	def run(self, options):
-		""" No, we don't catch exceptions on the FilterStream, make it work good """
+		""" Serve tweets for le ever """
 		track_list = options.keywords.split(',')
-		with tweetstream.FilterStream(options.username, options.password, track=track_list) as stream:
-			for tweet in stream:
-				try:
-					if '#' in tweet["text"]:
-						# Messages containing a # trigger a cleanup of the screen
-						self.emit('reset', '')
-					else:
-						self.emit('tweet',
-							{
-								'user': tweet["user"]["screen_name"],
-								'text': tweet["text"],
-								'date': tweet["created_at"],
-							}
-						)
-				except:
-					pass
-				finally:
-					gevent.sleep(.1)
+		while True:
+			try:
+				with tweetstream.FilterStream(options.username, options.password, track=track_list) as stream:
+					for tweet in stream:
+						try:
+							if '#' in tweet["text"]:
+								# Messages containing a # trigger a cleanup of the screen
+								self.emit('reset', '')
+							else:
+								self.emit('tweet',
+									{
+										'user': tweet["user"]["screen_name"],
+										'text': tweet["text"],
+										'date': tweet["created_at"],
+									}
+								)
+						except:
+							pass
+						finally:
+							gevent.sleep(.1)
+			except tweetstream.AuthenticationError:
+				print "Access denied to Twitter Stream API, bad credentials ?"
+				break
+			except Exception, e:
+				print "Twitter Stream API exception (%s)" % str(e)
+				gevent.sleep(5)
 
 def http404(start_response):
 	""" 404 handler """
@@ -104,9 +112,16 @@ if __name__ == '__main__':
 	parser.add_argument('-u', action="store", required=True, dest="username", type=str, help="your twitter username")
 	options = parser.parse_args()
 
-	# Our tweet streamer sits in a greenlet
-	gevent.spawn(GeventTweetStream, options)
+	try:
+		server = SocketIOServer(
+			('', 8000), application, resource='socket.io', policy_server=False
+		)
 
-	SocketIOServer(
-		('', 8000), application, resource='socket.io', policy_server=False
-	).serve_forever()
+		# Our tweet streamer sits in a greenlet, link it to our server for clean shutdown
+		gts = gevent.spawn(GeventTweetStream, options)
+		gts.link(server.stop)
+
+		server.serve_forever()
+	except KeyboardInterrupt:
+		gts.kill()
+		server.stop()
