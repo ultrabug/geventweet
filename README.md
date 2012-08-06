@@ -40,6 +40,8 @@ Just clone this repository and run geventweet.py with the following REQUIRED arg
 
 $ python geventweet.py -u YOUR_TWITTER_LOGIN -p YOUR_TWITTER_PASSWD -k KEYWORD1,KEYWORD2
 
+Then point your browser to http://localhost:8000
+
 
 gentoo users
 ============
