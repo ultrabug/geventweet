@@ -22,7 +22,7 @@ function feeding() {
 }
 
 $(function() {
-
+	WEB_SOCKET_SWF_LOCATION = "/static/flashsocket/WebSocketMain.swf";
 	var socket = io.connect();
 
 	socket.on('connect',    function()    { socket.emit('get_tweets'); feeding(); });

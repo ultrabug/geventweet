@@ -74,12 +74,10 @@ def http404(start_response):
 
 def application(env, start_response):
 	""" Our web serving app """
-	path = env['PATH_INFO'].strip('/')
-
-	if not path : path = 'static/index.html'
+	path = env['PATH_INFO'].strip('/') or 'index.html'
 
 	# static stuff
-	if path.startswith('static/'):
+	if path.startswith('static/') or path == "index.html":
 		try:
 			data = open(path).read()
 		except Exception:
@@ -91,6 +89,8 @@ def application(env, start_response):
 			content_type = "text/css"
 		elif path.endswith(".png"):
 			content_type = "image/png"
+		elif path.endswith(".swf"):
+			content_type = "application/x-shockwave-flash"
 		else:
 			content_type = "text/html"
 
@@ -100,7 +100,6 @@ def application(env, start_response):
 	# socketIO request
 	if path.startswith('socket.io/'):
 		socketio_manage(env, {'': TweetStreamNS})
-		return
 	else:
 		return http404(start_response)
 
@@ -114,7 +113,7 @@ if __name__ == '__main__':
 
 	try:
 		server = SocketIOServer(
-			('', 8000), application, resource='socket.io', policy_server=False
+			('', 8000), application, resource='socket.io', policy_server=True, policy_listener=('0.0.0.0', 10843)
 		)
 
 		# Our tweet streamer sits in a greenlet, link it to our server for clean shutdown
